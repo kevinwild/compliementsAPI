@@ -17,119 +17,75 @@ use Illuminate\Http\Request;
 use App\Helpers\Common;
 
 
-$router->get('/', function () use ($router) {
-    return $router->app->version();
-});
+//==============================================
+//=======        Admin Routes      =============
+//==============================================
+$router->get('/', [
+    'as' => 'index', 'uses' => 'ExpressionController@index'
+]);
 
+$router->get('login', 'AdminController@login');
+$router->post('login', 'AdminController@verifyLogin');
+Route::group(['middleware' => 'admin'], function () {
+    Route::get('dashboard/{token}', [
+        'as' => 'dashboard', 'uses' => 'AdminController@dashboard'
+    ]);
+
+});
 
 //==============================================
 //=======   Handle Expressions =================
 //==============================================
 //-- Get All
-$router->get('expressions', function () {
-    return response()->json(Expression::all());
-});
+$router->get('expressions', 'ExpressionController@all');
 
 //-- Find by ID
-$router->get('expressions/{id}', function ($id) {
-    return response()->json(Expression::find($id));
-});
+$router->get('expressions/{id}', 'ExpressionController@show');
 
 //-- Create New Expression
-$router->post('expressions', function (Request $request) {
-    $value = $request->input('value');
-    $group_id = $request->input('group_id');
-    $expression = new Expression();
-        $expression->value = $value;
-        $expression->group_id = $group_id;
-    $status = $expression->save();
-    if($status){
-        return response()->json(["status" => true, "message" => "Express Saved"]);
-    }else {return response()->json(["status" => false, "message" => "Failed Saved"]);}
-});
+$router->post('expressions', 'ExpressionController@store');
 
 //-- Delete Expression
-$router->delete('expressions/{id}', function ($id) {
-    $expression = Expression::find($id);
-    if($expression === null){
-        return Common::handleEmpty();
-    }
-    $status = $expression->delete();
-    if($status){
-        return response()->json(["status" => true, "message" => "Expression Deleted"]);
-    }else {return response()->json(["status" => false, "message" => "Failed Deletion"]);}
-});
+$router->delete('expressions/{id}', 'ExpressionController@destroy');
 
 //-- Edit Expression
-$router->post('expressions/{id}', function (Request $request, $id) {
-    $expression = Expression::find($id);
-    $value = $request->input('value');
-
-    if($expression === null || $value === null){
-        return Common::handleEmpty();
-    }
-    $expression->value = $value;
-    $status = $expression->update();
-    if($status){
-        return response()->json(["status" => true, "message" => "Expression Updated"]);
-    }else {return response()->json(["status" => false, "message" => "Failed Update"]);}
-});
+$router->post('expressions/{id}', 'ExpressionController@update');
 
 
 //==============================================
 //=======   Handle ExpressionGroups  ==========
 //==============================================
 //-- Get All
-$router->get('groups', function () {
-    return response()->json(ExpressionGroup::all());
-});
+$router->get('groups', 'ExpressionController@allGroup');
 
 //-- Find by ID
-$router->get('groups/{id}', function ($id) {
-    return response()->json(ExpressionGroup::find($id));
-});
+$router->get('groups/{id}', 'ExpressionController@findGroup');
 
 //-- Get All Expressions by ExpressionGroup
-$router->get('groups/{id}/expressions', function ($id) {
-    return response()->json(Expression::
-         where(["group_id" => $id])
-        ->get());
-});
+$router->get('groups/{id}/expressions', 'ExpressionController@expressionByGroup');
 
 //-- Create New ExpressionGroup
-$router->post('groups', function (Request $request) {
-    $group_name = $request->input('group_name');
-    $expression = new ExpressionGroup();
-    $expression->group_name = $group_name;
-    $status = $expression->save();
-    if($status){
-        return response()->json(["status" => true, "message" => "Express Group Saved"]);
-    }else {return response()->json(["status" => false, "message" => "Failed Saved"]);}
-});
+$router->post('groups', 'ExpressionController@createGroup');
 
 //-- Edit ExpressionGroup
-$router->post('expressions/{id}', function (Request $request, $id) {
-    $group = ExpressionGroup::find($id);
-    $group_name = $request->input('group_name');
-
-    if($group === null || $group_name === null){
-        return Common::handleEmpty();
-    }
-    $group->group_name = $group_name;
-    $status = $group->update();
-    if($status){
-        return response()->json(["status" => true, "message" => "Group Updated"]);
-    }else {return response()->json(["status" => false, "message" => "Failed Update"]);}
-});
+$router->post('expressions/{id}', 'ExpressionController@editGroup');
 
 //-- Delete ExpressionGroup
 $router->delete('groups/{id}', function ($id) {
     $group = ExpressionGroup::find($id);
-    if($group === null){
+    if ($group === null) {
         return Common::handleEmpty();
     }
     $status = $group->delete();
-    if($status){
+    if ($status) {
         return response()->json(["status" => true, "message" => "Group Deleted"]);
-    }else {return response()->json(["status" => false, "message" => "Failed Deletion"]);}
+    } else {
+        return response()->json(["status" => false, "message" => "Failed Deletion"]);
+    }
+});
+
+
+$router->get('quicktest', function () {
+    echo hash('sha256', "test");
+
 });

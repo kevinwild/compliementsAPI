@@ -15,6 +15,6 @@ class Expression extends Model
 
     public function group()
     {
-        return $this->hasOne(ExpressionGroup::class);
+        return $this->belongsTo(ExpressionGroup::class, 'group_id');
     }
 }

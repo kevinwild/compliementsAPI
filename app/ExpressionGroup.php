@@ -14,6 +14,6 @@ class ExpressionGroup extends Model
 {
     public function expression()
     {
-        return $this->hasMany(ExpressionGroup::class);
+        return $this->hasMany(ExpressionGroup::class, 'group_id','id');
     }
 }
